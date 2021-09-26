@@ -119,21 +119,38 @@ bool simulate_projectile(const double magnitude, const double angle,
   return hit_target;
 }
 
+void sort(double *global_telemetry, int &global_telemetry_current_size){
+    for(int j = 0; j < global_telemetry_current_size; j += 3){
+        for(int i=0; i<global_telemetry_current_size-3; i+= 3){
+            if(global_telemetry[i]>global_telemetry[i+3]){
+                double a = global_telemetry[i];
+                double b = global_telemetry[i+1];
+                double c = global_telemetry[i+2];
+                for(int n=0;n<3;n++){
+                    global_telemetry[i+n] = global_telemetry[i+n+3];
+                }
+                global_telemetry[i+3]=a;
+                global_telemetry[i+4]=b;
+                global_telemetry[i+5]=c;
+            }
+        }
+    }
+}
+
 void merge_telemetry(double **telemetries,
                      int tot_telemetries,
                      int *telemetries_sizes,
-                     double* &global_telemetry,
-                     int &global_telemetry_current_size,
-                     int &global_telemetry_max_size) {
-    global_telemetry_max_size = 0;
-    for (int i = 0; i < tot_telemetries; i++) {
-        global_telemetry_max_size += telemetries_sizes[i];
+                     double* &global_telemetry,             //changed to global
+                     int &global_telemetry_current_size,    //changed to global
+                     int &global_telemetry_max_size) {      //changed to global
+    for(int i=0; i<tot_telemetries; i++){
+        for(int j=0; j < *(telemetries_sizes+i); j++){
+            global_telemetry = append_to_array(*(*(telemetries+i)+j),
+                                               global_telemetry,
+                                               global_telemetry_current_size,
+                                               global_telemetry_max_size);
+
+        }
     }
-    global_telemetry = new double[global_telemetry_max_size];
-
-    global_telemetry_current_size = 0;
-    for (int i = 0; i < tot_telemetries; ++i)
-        for (int j = 0; j < telemetries_sizes[i]; ++j)
-            global_telemetry = append_to_array(telemetries[i][j], global_telemetry, global_telemetry_current_size, global_telemetry_max_size);
+    sort(global_telemetry, global_telemetry_current_size);
 }
-
